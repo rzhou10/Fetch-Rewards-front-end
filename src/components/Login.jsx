@@ -1,6 +1,6 @@
 import axios from 'axios';
 import { useState } from 'react';
-import { Button, FormControl, FormGroup, FormLabel } from 'react-bootstrap';
+import { Button, FormControl, FormGroup, FormLabel, Row, Col } from 'react-bootstrap';
 
 
 export default function Login() {
@@ -11,35 +11,49 @@ export default function Login() {
     axios.post('https://frontend-take-home-service.fetch.com/auth/login', {
       name: name,
       email: email
-    }).then((response) => {
-      console.log(response)
+    }, {withCredentials: true}).then((response) => {
       if (response.data === "OK") {
-        // window.location.href = "/home";
+        window.location.href = "/home";
       }
-    })
+    }).catch(e =>
+      console.log('Error with logging in: ', e.message)
+    )
   }
 
   return (
-    <>
-      <h1>Welcome! Please log in to select a dog breed.</h1>
-      <div>
+    <div style={{ width: '60%', margin: 'auto' }}>
+      <h1 className='mb-5'>Welcome! Please log in to select a dog breed.</h1>
+      <div >
         <FormGroup >
-          <FormLabel>Name: &nbsp;</FormLabel>
-          <FormControl value={name} onChange={(e) => {
-            setName(e.target.value)
-          }} />
-        </FormGroup>
-        <FormGroup>
-          <FormLabel>Enail: &nbsp;</FormLabel>
-          <FormControl value={email} onChange={(e) => {
-            setEmail(e.target.value)
-          }} />
+
+          <Row className={'mb-4'}>
+            <Col md={4} className='form-text-label'>
+              <FormLabel>Name: &nbsp;</FormLabel>
+            </Col>
+            <Col md={8}>
+              <FormControl value={name} onChange={(e) => {
+                setName(e.target.value)
+              }} />
+            </Col>
+          </Row>
+
+          <Row className={'mb-4'}>
+            <Col md={4} className='form-text-label'>
+              <FormLabel>Email: &nbsp;</FormLabel>
+            </Col>
+            <Col md={8}>
+              <FormControl value={email} onChange={(e) => {
+                setEmail(e.target.value)
+              }} />
+            </Col>
+          </Row>
+
         </FormGroup>
       </div>
       <Button onClick={(e) => {
         e.preventDefault();
-        login()
+        login();
       }}>Login</Button>
-    </>
+    </div>
   )
 }

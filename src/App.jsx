@@ -13,7 +13,7 @@ const router = createBrowserRouter([
   },
   {
     path: "/home",
-    element: <DogSearch />,
+    element: <DogSearch />
   }
 ]);
 

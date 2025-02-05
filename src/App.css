@@ -20,6 +20,7 @@
 
 .single-image {
   width: 50%;
+  max-width: 219px;
 }
 
 .dog-image {

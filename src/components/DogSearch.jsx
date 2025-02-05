@@ -8,37 +8,73 @@ export default function DogSearch() {
   const [nextUrl, setNextUrl] = useState('');
   const [prevUrl, setPrevUrl] = useState('');
   const [breeds, setBreeds] = useState([]);
-  const [zipCodes, setZipCodes] = useState([]);
+  const [selectedBreed, setSelectedBreed] = useState([]);
+  const [zipCodes, setZipCodes] = useState('');
   const [minAge, setMinAage] = useState(0);
   const [maxAge, setMaxAge] = useState(0);
   const [results, setResults] = useState([]);
   const [favorites, setFavorites] = useState([]);
   const [match, setMatch] = useState([]);
+  const [sortOrder, setSortOrder] = useState('asc');
+  const [sortColumn, setSortColumn] = useState('breed');
 
   useEffect(() => {
-    // axios.get('https://frontend-take-home-service.fetch.com/dogs/breeds').then((response) => {
-    //   console.log(response.data)
-    //   setBreeds(response.data);
-    // }).catch((e) =>
-    //   console.log('e: ', e))
+    axios.get('https://frontend-take-home-service.fetch.com/dogs/breeds', { withCredentials: true }).then((response) => {
+      setBreeds(response.data);
+      setSelectedBreed(response.data[0]);
+    }).catch((e) =>
+      console.log('Error with fetching breeds: ', e.message)
+    );
   }, []);
 
   const searchDogs = (url) => {
-    axios.get(`https://frontend-take-home-service.fetch.com/${url}`).then((response) => {
+
+    let searchUrl = `https://frontend-take-home-service.fetch.com${url}?breeds=${selectedBreed}&sort=${sortColumn}:${sortOrder}`;
+
+    if (zipCodes) {
+      searchUrl += `&zipCodes=${zipCodes.split(',')}`
+    }
+
+    if (minAge > 0) {
+      searchUrl += `&ageMin=${minAge}`
+    }
+    if (maxAge > 0) {
+      searchUrl += `&ageMax=${maxAge}`
+    }
+
+    axios.get(searchUrl, { breeds: breeds, withCredentials: true }).then((response) => {
       const data = response.data;
       setNextUrl(data.next ?? '');
       setPrevUrl(data.prev ?? '');
-      axios.post('https://frontend-take-home-service.fetch.com/dogs', data.resultIds).then((res) => {
+      axios.post('https://frontend-take-home-service.fetch.com/dogs', data.resultIds, { withCredentials: true }).then((res) => {
         setResults(res.data);
+      }).catch((e) => {
+        console.log("error with searching dogs: ", e.message);
       })
+    }).catch((e) => {
+      console.log("error with searching dogs: ", e.message);
     })
   }
 
   const generateMatch = () => {
-    axios.post(`https://frontend-take-home-service.fetch.com/dogs/match`).then((response) => {
-      axios.post('https://frontend-take-home-service.fetch.com/dogs', [response.data.match]).then((res) => {
-        setMatch(res.data)
+    axios.post(`https://frontend-take-home-service.fetch.com/dogs/match`, favorites, { withCredentials: true }).then((response) => {
+      axios.post('https://frontend-take-home-service.fetch.com/dogs', [response.data.match], { withCredentials: true }).then((res) => {
+        setMatch(res.data);
+      }).catch((e) => {
+        console.log("error with generating a match: ", e.message)
       })
+    }).catch((e) => {
+      console.log("error with generating a match: ", e.message)
+    })
+  }
+
+  const logOut = () => {
+    axios.post('https://frontend-take-home-service.fetch.com/auth/logout', {}, { withCredentials: true }).then((response) => {
+      if (response.data === "OK") {
+        window.location.href = '/';
+      }
+    }).catch((e) => {
+      console.log('Error with logging out: ', e.message)
     })
   }
 
@@ -47,7 +83,7 @@ export default function DogSearch() {
       <div>
         <Container>
           <Row>
-            <Col>
+            <Col md={7}>
               <h2 className='mb-5'>Search dog breeds here.</h2>
               <FormGroup>
                 <Row className={'mb-4'}>
@@ -55,10 +91,13 @@ export default function DogSearch() {
                     <FormLabel>Breeds:</FormLabel>
                   </Col>
                   <Col md={8}>
-                    <Form.Select>
-                      {/* {breeds.map((breed, index) => {
-                  return <option index={index} value={breed}>{breed}</option>
-                })} */}
+                    <Form.Select onChange={(e) => {
+                      e.preventDefault();
+                      setSelectedBreed(e.target.value);
+                    }}>
+                      {breeds.map((breed, index) => {
+                        return <option index={index} value={breed}>{breed}</option>
+                      })}
                     </Form.Select>
                   </Col>
                 </Row>
@@ -82,7 +121,7 @@ export default function DogSearch() {
                     }} />
                   </Col>
                 </Row>
-                <Row>
+                <Row className={'mb-4'}>
                   <Col md={4} className='form-text-label'>
                     <FormLabel>Maximum Age:</FormLabel>
                   </Col>
@@ -92,9 +131,36 @@ export default function DogSearch() {
                     }} />
                   </Col>
                 </Row>
+                <Row className={'mb-4'}>
+                  <Col md={3} className='form-text-label'>
+                    <FormLabel>Sort by:</FormLabel>
+                  </Col>
+                  <Col md={3}>
+                    <Form.Select onChange={(e) => {
+                      e.preventDefault();
+                      setSortColumn(e.target.value);
+                    }}>
+                      <option value={'breed'}>Breed</option>
+                      <option value={'name'}>Name</option>
+                      <option value={'age'}>Age</option>
+                    </Form.Select>
+                  </Col>
+                  <Col md={3} className='form-text-label'>
+                    <FormLabel>Sort Order:</FormLabel>
+                  </Col>
+                  <Col md={3}>
+                    <Form.Select onChange={(e) => {
+                      e.preventDefault();
+                      setSortOrder(e.target.value);
+                    }}>
+                      <option value={'asc'}>Ascending</option>
+                      <option value={'desc'}>Descending</option>
+                    </Form.Select>
+                  </Col>
+                </Row>
               </FormGroup>
             </Col>
-            <Col>
+            <Col md={5} style={{ minWidth: '300px' }}>
               <Button onClick={generateMatch} className='mb-4'>Generate Match</Button>
               {match.length > 0 ? <>
                 <p>Congrats! You have matched with:</p>
@@ -105,6 +171,11 @@ export default function DogSearch() {
         </Container>
 
         <div className='mt-5'>
+          <Button onClick={(e) => {
+            e.preventDefault();
+            searchDogs('/dogs/search/');
+          }}>Search Dogs</Button>
+          &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
           <Button disabled={prevUrl === ''} onClick={(e) => {
             e.preventDefault();
             searchDogs(prevUrl);
@@ -120,13 +191,18 @@ export default function DogSearch() {
       <Container className='flex-wrap'>
         <Row style={{ gap: '25px', justifyContent: 'space-between' }}>
           {results.map((dog, index) => {
-            console.log("dog results!")
             return (
               <DogCard index={index} dog={dog} buttonFunction={setFavorites} favorites={favorites} />
             )
           })}
         </Row>
       </Container>
+      <div style={{ position: 'absolute', top: '2%', right: '2%' }}>
+        <Button onClick={(e) => {
+          e.preventDefault();
+          logOut()
+        }}>Log Out</Button>
+      </div>
     </div>
   )
 }
