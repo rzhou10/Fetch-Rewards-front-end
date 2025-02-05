@@ -13,13 +13,13 @@ export default function DogCard({ index, dog, buttonFunction, favorites }) {
       <p><span className='card-title'>Breed</span>: {dog.breed}</p>
       <p><span className='card-title'>Zip Code</span>: {dog.zip_code}</p>
       {buttonFunction ?
-        <Button onClick={(e) => {
+        <Button disabled={favorites.length === 100} onClick={(e) => {
           e.preventDefault();
-          if (!favorites.includes(dog.id)) {
-            buttonFunction([...favorites, dog.id]);
+          const filtered = favorites.filter(f => f.id !== dog.id);
+          if (filtered.length === favorites.length) {
+            buttonFunction([...favorites, dog]);
             setIsFavorited(true);
           } else {
-            const filtered = favorites.filter(f => f.id === dog.id);
             buttonFunction(filtered);
             setIsFavorited(false);
           }

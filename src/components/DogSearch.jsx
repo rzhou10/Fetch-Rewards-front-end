@@ -64,7 +64,8 @@ export default function DogSearch() {
   }
 
   const generateMatch = () => {
-    axios.post(`https://frontend-take-home-service.fetch.com/dogs/match`, favorites, { withCredentials: true }).then((response) => {
+    const ids = favorites.map((dog) => dog.id)
+    axios.post(`https://frontend-take-home-service.fetch.com/dogs/match`, ids, { withCredentials: true }).then((response) => {
       axios.post('https://frontend-take-home-service.fetch.com/dogs', [response.data.match], { withCredentials: true }).then((res) => {
         setMatch(res.data);
       }).catch((e) => {
@@ -167,7 +168,7 @@ export default function DogSearch() {
                   </Col>
                 </Row>
               </FormGroup>
-              <p>Favorited dog(s): {favorites.map((dog) => <span>{dog.name}</span>)}</p>
+              <p><span style={{fontWeight: '700'}}>Favorited dog(s)</span>: {favorites.map((dog) => dog.name).join(", ")}</p>
             </Col>
             <Col md={5} style={{ minWidth: '300px' }}>
               <Button onClick={generateMatch} className='mb-4'>Generate Match</Button>
@@ -179,7 +180,7 @@ export default function DogSearch() {
           </Row>
         </Container>
 
-        <div className='mt-5'>
+        <div className='my-5'>
           <Button onClick={(e) => {
             e.preventDefault();
             searchDogs('/dogs/search/');
@@ -198,7 +199,7 @@ export default function DogSearch() {
       </div>
       <h2>Search Results</h2>
       <Container className='flex-wrap'>
-        <Row style={{ gap: '25px', justifyContent: 'space-between' }}>
+        <Row style={{ gap: '35px', justifyContent: 'space-between' }}>
           {results.map((dog, index) => {
             return (
               <DogCard index={index} dog={dog} buttonFunction={setFavorites} favorites={favorites} />
