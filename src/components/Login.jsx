@@ -12,7 +12,10 @@ export default function Login() {
       name: name,
       email: email
     }).then((response) => {
-      console.log(response.config)
+      console.log(response)
+      if (response.data === "OK") {
+        // window.location.href = "/home";
+      }
     })
   }
 

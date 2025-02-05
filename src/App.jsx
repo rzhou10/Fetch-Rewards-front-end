@@ -14,11 +14,7 @@ const router = createBrowserRouter([
   {
     path: "/home",
     element: <DogSearch />,
-  },
-  // {
-  //   path: "/create-account",
-  //   element: <CreateAccount />,
-  // },
+  }
 ]);
 
 export default function App() {
