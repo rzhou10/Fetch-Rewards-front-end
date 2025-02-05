@@ -29,12 +29,19 @@ export default function DogSearch() {
 
   const searchDogs = (url) => {
 
-    let searchUrl = `https://frontend-take-home-service.fetch.com${url}?breeds=${selectedBreed}&sort=${sortColumn}:${sortOrder}`;
+    let searchUrl = `https://frontend-take-home-service.fetch.com${url}`;
+
+    // included these first two checks in case a new search was needed
+    if (!searchUrl.includes('sort')) {
+      searchUrl += `?sort=${sortColumn}:${sortOrder}`
+    }
+    if (!searchUrl.includes('breeds')) {
+      searchUrl += `&breeds=${selectedBreed}`
+    }
 
     if (zipCodes) {
       searchUrl += `&zipCodes=${zipCodes.split(',')}`
     }
-
     if (minAge > 0) {
       searchUrl += `&ageMin=${minAge}`
     }
@@ -155,10 +162,12 @@ export default function DogSearch() {
                     }}>
                       <option value={'asc'}>Ascending</option>
                       <option value={'desc'}>Descending</option>
+                      
                     </Form.Select>
                   </Col>
                 </Row>
               </FormGroup>
+              <p>Favorited dog(s): {favorites.map((dog) => <span>{dog.name}</span>)}</p>
             </Col>
             <Col md={5} style={{ minWidth: '300px' }}>
               <Button onClick={generateMatch} className='mb-4'>Generate Match</Button>
